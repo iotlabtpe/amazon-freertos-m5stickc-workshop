@@ -135,6 +135,17 @@ static const char *TAG = "m5stickc_lab1_aws_iot_button";
  */
 #define ACKNOWLEDGEMENT_MESSAGE_BUFFER_LENGTH    ( sizeof( ACKNOWLEDGEMENT_MESSAGE_FORMAT ) + 2 )
 
+/* Semaphore for connection readiness */
+IotSemaphore_t connectionReadySem;
+
+/* Semaphore for connection library / SDK clean up */
+IotSemaphore_t cleanUpReadySem;
+
+/* Handle of the MQTT connection used in this demo. */
+IotMqttConnection_t mqttConnection = IOT_MQTT_CONNECTION_INITIALIZER;
+
+/* boolean flag for connection established */
+bool connectionEstablished = false;
 
 /*-----------------------------------------------------------*/
 
@@ -158,8 +169,6 @@ void vNetworkDisconnectedCallback( const IotNetworkInterface_t * pNetworkInterfa
 {
     ESP_LOGD(TAG, "vNetworkDisconnectedCallback");
 }
-
-labFinishCallback_t pFinishCallback = NULL;
 
 /*-----------------------------------------------------------*/
 
@@ -440,49 +449,8 @@ int m5stickc_lab1_aws_iot_button(bool awsIotMqttMode,
     /* Return value of this function and the exit status of this program. */
     int status = EXIT_SUCCESS;
 
-    /* Handle of the MQTT connection used in this demo. */
-    IotMqttConnection_t mqttConnection = IOT_MQTT_CONNECTION_INITIALIZER;
-
-    /* Topic and Payload buffers */
-    char pTopic[ TOPIC_BUFFER_LENGTH ] = { 0 };
-    char pPublishPayload[ PUBLISH_PAYLOAD_BUFFER_LENGTH ] = { 0 };
-    uint16_t publishPayloadLength;
-
-    /* Generate the payload for the PUBLISH. */
-    status = snprintf( pPublishPayload, PUBLISH_PAYLOAD_BUFFER_LENGTH, payloadFormat,
-                        myStickCID[0], myStickCID[1], myStickCID[2], myStickCID[3], myStickCID[4], myStickCID[5] );
-
-    /* Check for errors from snprintf. */
-    if( status < 0 )
-    {
-        IotLogError( "Failed to generate MQTT PUBLISH payload: %d.", (int) status );
-        status = EXIT_FAILURE;
-        return status;
-    }
-    else
-    {
-        publishPayloadLength = status;
-        status = EXIT_SUCCESS;
-
-        /* Generate the topic. */
-        status = snprintf( pTopic, TOPIC_BUFFER_LENGTH, TOPIC_FORMAT, 
-                    myStickCID[0], myStickCID[1], myStickCID[2], myStickCID[3], myStickCID[4], myStickCID[5] );
-
-    }
-
-    /* Check for errors from snprintf. */
-    if( status < 0 )
-    {
-        IotLogError( "Failed to generate MQTT topic name for PUBLISH %d.", (int) status );
-        status = EXIT_FAILURE;
-    }
-    else
-    {
-        status = EXIT_SUCCESS;
-    }
-
     /* Flags for tracking which cleanup functions must be called. */
-    bool librariesInitialized = false, connectionEstablished = false;
+    bool librariesInitialized = false;
 
     if( status == EXIT_SUCCESS )
     {
@@ -503,16 +471,22 @@ int m5stickc_lab1_aws_iot_button(bool awsIotMqttMode,
                                            pNetworkInterface,
                                            &mqttConnection );
     }
-
+    
     if( status == EXIT_SUCCESS )
     {
         /* Mark the MQTT connection as established. */
         connectionEstablished = true;
-
-        /* PUBLISH message */
-        status = _publishMessage( mqttConnection, pTopic, TOPIC_BUFFER_LENGTH, pPublishPayload, publishPayloadLength );
-
     }
+    
+    // Unlook connection readiness semaphore
+    IotSemaphore_Post( &connectionReadySem );
+    
+    IotLogInfo( "Waiting for connection clean up signal..." );
+    // Wait for clean up semaphore
+    IotSemaphore_Wait( &cleanUpReadySem );
+    IotSemaphore_Destroy( &cleanUpReadySem );
+    
+    IotLogInfo( "Received connection clean up signal." );
 
     /* Disconnect the MQTT connection if it was established. */
     if( connectionEstablished == true )
@@ -526,20 +500,18 @@ int m5stickc_lab1_aws_iot_button(bool awsIotMqttMode,
         _cleanupDemo();
     }
 
-    if ( pFinishCallback != NULL )
-    {
-        pFinishCallback();
-    }
-
     return status;    
 }
 
 /*-----------------------------------------------------------*/
 
-void m5stickc_lab1_start( labFinishCallback_t finishCallback ) 
+void m5stickc_lab1_cleanup(void)
 {
-    pFinishCallback = finishCallback;
+    IotSemaphore_Post( &cleanUpReadySem );
+}
 
+void m5stickc_lab1_init(void) 
+{
     static demoContext_t mqttDemoContext =
         {
             .networkTypes = democonfigNETWORK_TYPES,
@@ -548,7 +520,70 @@ void m5stickc_lab1_start( labFinishCallback_t finishCallback )
             .networkDisconnectedCallback = vNetworkDisconnectedCallback
         };
 
+    // Create semaphore for connection readiness
+    if (!IotSemaphore_Create( &connectionReadySem, 0, 1 ))
+    {
+        IotLogError("Failed to create connection semaphore!");
+    }
+    
+    // Create semaphore for connection readiness
+    if (!IotSemaphore_Create( &cleanUpReadySem, 0, 1 ))
+    {
+        IotLogError("Failed to create clean up semaphore!");
+    }
+
     Iot_CreateDetachedThread(runDemoTask, &mqttDemoContext, democonfigDEMO_PRIORITY, democonfigDEMO_STACKSIZE);
+}
+
+/*-----------------------------------------------------------*/
+
+bool isConnectionReady = false;
+void m5stickc_lab1_start(void) 
+{
+    if (!isConnectionReady)
+    {
+        IotLogInfo( "Waiting for MQTT connection ready." );
+        // Wait until connection ready and destroy semaphore
+        IotSemaphore_Wait( &connectionReadySem );
+        IotSemaphore_Destroy( &connectionReadySem );
+        
+        isConnectionReady = true;
+        IotLogInfo( "MQTT connection is ready." );
+    }
+    
+    /* Topic and Payload buffers */
+    char pTopic[ TOPIC_BUFFER_LENGTH ] = { 0 };
+    char pPublishPayload[ PUBLISH_PAYLOAD_BUFFER_LENGTH ] = { 0 };
+    uint16_t publishPayloadLength = 0;
+
+    /* Generate the payload for the PUBLISH. */
+    int status = snprintf( pPublishPayload, PUBLISH_PAYLOAD_BUFFER_LENGTH, PUBLISH_PAYLOAD_FORMAT_SINGLE,
+                        myStickCID[0], myStickCID[1], myStickCID[2], myStickCID[3], myStickCID[4], myStickCID[5] );
+
+    /* Check for errors from snprintf. */
+    if( status < 0 )
+    {
+        IotLogError( "Failed to generate MQTT PUBLISH payload: %d.", (int) status );
+    }
+    else
+    {
+        publishPayloadLength = status;
+
+        /* Generate the topic. */
+        status = snprintf( pTopic, TOPIC_BUFFER_LENGTH, TOPIC_FORMAT, 
+                    myStickCID[0], myStickCID[1], myStickCID[2], myStickCID[3], myStickCID[4], myStickCID[5] );
+
+    }
+    
+    if ( status < 0 ) 
+    {
+        IotLogError( "Failed to generate MQTT payload topic: %d.", (int) status );
+    }
+    
+    if( connectionEstablished )
+    {
+        _publishMessage( mqttConnection, pTopic, TOPIC_BUFFER_LENGTH, pPublishPayload, publishPayloadLength );
+    }
 }
 
 /*-----------------------------------------------------------*/

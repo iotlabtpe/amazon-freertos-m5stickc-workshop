@@ -15,7 +15,7 @@ On Windows it will be ```COM3``` for example, on Mac OS typically it enumerated 
 - Drop it to the subfolder that already in your PATH or add subfolder you placed esptool to your PATH variable
 - Open Commnd Prompt and execute following command (from the directory you places 3 downloaded files):
 ```
-esptool --chip esp32 --port COM3 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x20000 aws_demo.bin 0x8000 partition-table.bin
+esptool --chip esp32 --port COM3 --baud 115200 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x20000 aws_demo.bin 0x8000 partition-table.bin
 ```
 
 **Mac/Linux**
@@ -29,20 +29,20 @@ sudo pip install esptool pyserial
 
 ```bash
 cd [THE FOLDER WHERE YOU DOWNLOADED THE 3 FILES IN PREVIOUS STEP]
-esptool.py --chip esp32 --port /dev/tty.SLAB_USBtoUART --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x20000 aws_demo.bin 0x8000 partition-table.bin
+esptool.py --chip esp32 --port /dev/tty.SLAB_USBtoUART --baud 115200 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x20000 aws_demo.bin 0x8000 partition-table.bin
 ```
 
 - IF YOU ARE RUNNING ON YOUR LAPTOP: Execute following command from the directory you placed 3 downloaded files:
 
 ```bash
 cd ~/Downloads/cdd-workshop/demos/espressif/esp32_devkitc_esp_wrover_kit/make
-esptool.py --chip esp32 --port /dev/tty.SLAB_USBtoUART --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 ./build/bootloader/bootloader.bin 0x20000 ./build/aws_demo.bin 0x8000 ./build/partition-table.bin
+esptool.py --chip esp32 --port /dev/tty.SLAB_USBtoUART --baud 115200 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 ./build/bootloader/bootloader.bin 0x20000 ./build/aws_demo.bin 0x8000 ./build/partition-table.bin
 ```
 
 4. Monitor the flashing process:
 
 ```bash
-bash-3.2$ esptool.py --chip esp32 --port /dev/tty.SLAB_USBtoUART --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x20000 aws_demo.bin 0x8000 partition-table.bin
+bash-3.2$ esptool.py --chip esp32 --port /dev/tty.SLAB_USBtoUART --baud 115200 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x20000 aws_demo.bin 0x8000 partition-table.bin
 esptool.py v2.5.1
 Serial port /dev/tty.SLAB_USBtoUART
 Connecting........__
@@ -52,7 +52,7 @@ MAC: 24:0a:c4:23:de:7c
 Uploading stub...
 Running stub...
 Stub running...
-Changing baud rate to 921600
+Changing baud rate to 115200
 Changed.
 Configuring flash size...
 Auto-detected Flash size: 4MB

@@ -9,7 +9,7 @@ In your Cloud9 terminal environment, clone the lab repo:
 
 ```bash
 cd ~/environment
-git clone https://github.com/teuteuguy/amazon-freertos-m5stickc-workshop.git --recurse-submodules workshop
+git clone https://github.com/onsankawai/amazon-freertos-m5stickc-workshop.git --recurse-submodules workshop
 ```
 
 ## Setup your credentials

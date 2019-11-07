@@ -3,10 +3,10 @@
 ## Clone the repository
 
 Main code can be found on the repository page: 
-[github.com/teuteuguy/amazon-freertos-m5stickc-workshop](https://github.com/teuteuguy/amazon-freertos-m5stickc-workshop)
+[github.com/onsankawai/amazon-freertos-m5stickc-workshop](https://github.com/onsankawai/amazon-freertos-m5stickc-workshop)
 
 ```bash
-git clone https://github.com/teuteuguy/amazon-freertos-m5stickc-workshop.git --recurse-submodules workshop
+git clone https://github.com/onsankawai/amazon-freertos-m5stickc-workshop.git --recurse-submodules workshop
 ```
 
 > Note: from now on, we'll assume your bash is in the workshop folder

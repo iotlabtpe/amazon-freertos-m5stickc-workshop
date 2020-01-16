@@ -72,21 +72,47 @@ esp_err_t m5stickc_demo_run(void)
 
 /*-----------------------------------------------------------*/
 
+static void _sleep()
+{
+#ifdef M5CONFIG_LAB1_AWS_IOT_BUTTON
+    m5stickc_lab1_cleanup();
+#endif
+    
+    esp_sleep_enable_ext0_wakeup(M5BUTTON_BUTTON_B_GPIO, 0);
+    esp_err_t res = ESP_FAIL;
+    res = m5power_set_sleep();
+    if (res == ESP_OK)
+    {
+        esp_deep_sleep_start();
+    }
+}
+
+static void prvSleepTimerCallback(TimerHandle_t pxTimer)
+{
+    _sleep();
+}
+
+/*-----------------------------------------------------------*/
+
+
 void m5button_event_handler(void * handler_arg, esp_event_base_t base, int32_t id, void * event_data)
 {
     if (base == M5BUTTON_A_EVENT_BASE && id == M5BUTTON_BUTTON_CLICK_EVENT) {
         ESP_LOGI(TAG, "Button A Pressed");
         
-#ifdef M5CONFIG_LAB0_DEEP_SLEEP_BUTTON_WAKEUP
+#ifdef M5CONFIG_LAB1_AWS_IOT_BUTTON
+        // Reset sleep timer
         m5stickc_lab0_start();
+        
+        m5stickc_lab1_start();
 #endif // M5CONFIG_LAB0_DEEP_SLEEP_BUTTON_WAKEUP
     }
 
-    if (base == M5BUTTON_B_EVENT_BASE && id == M5BUTTON_BUTTON_HOLD_EVENT) {
-        ESP_LOGI(TAG, "Button B Held");
+    if (base == M5BUTTON_B_EVENT_BASE && id == M5BUTTON_BUTTON_CLICK_EVENT) {
+        ESP_LOGI(TAG, "Button B Clicked");
 
-        ESP_LOGI(TAG, "Restarting");
-        esp_restart();
+        ESP_LOGI(TAG, "Sleeps");
+        _sleep();
     }
 }
 
@@ -159,19 +185,13 @@ esp_err_t m5stickc_demo_init(void)
     ESP_LOGI(TAG, "======================================================");
 
 #ifdef M5CONFIG_LAB0_DEEP_SLEEP_BUTTON_WAKEUP
-    m5stickc_lab0_init();
+    m5stickc_lab0_init(prvSleepTimerCallback);
 #endif // M5CONFIG_LAB0_DEEP_SLEEP_BUTTON_WAKEUP
 
 #ifdef M5CONFIG_LAB1_AWS_IOT_BUTTON
-    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0)
-    {
-        m5stickc_lab1_start( m5stickc_lab0_init );
-    }
-    else
-    {
-        m5stickc_lab0_init();
-    }
-#endif
+    m5stickc_lab0_init(prvSleepTimerCallback);
+    m5stickc_lab1_init();
+#endif // M5CONFIG_LAB1_AWS_IOT_BUTTON
 
 #ifdef M5CONFIG_LAB2_SHADOW
     m5stickc_lab2_start();

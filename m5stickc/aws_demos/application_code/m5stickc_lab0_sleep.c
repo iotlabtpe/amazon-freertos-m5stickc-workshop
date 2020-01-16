@@ -20,7 +20,7 @@ static const char *TAG = "m5stickc_lab0_sleep";
 
 /*-----------------------------------------------------------*/
 
-static const TickType_t xSleepTimerFrequency_ms = 10000UL;
+static const TickType_t xSleepTimerFrequency_ms = 60000UL;
 static TimerHandle_t xSleepTimer;
 
 static void prvSleepTimerCallback(TimerHandle_t pxTimer)
@@ -35,10 +35,10 @@ static void prvSleepTimerCallback(TimerHandle_t pxTimer)
 
 /*-----------------------------------------------------------*/
 
-void m5stickc_lab0_init(void)
+void m5stickc_lab0_init(TimerCallbackFunction_t callback)
 {
-    esp_sleep_enable_ext0_wakeup(M5BUTTON_BUTTON_A_GPIO, 0);
-    xSleepTimer = xTimerCreate("SleepTimer", pdMS_TO_TICKS(xSleepTimerFrequency_ms), pdFALSE, NULL, prvSleepTimerCallback);
+    //esp_sleep_enable_ext0_wakeup(M5BUTTON_BUTTON_A_GPIO, 0);
+    xSleepTimer = xTimerCreate("SleepTimer", pdMS_TO_TICKS(xSleepTimerFrequency_ms), pdFALSE, NULL, callback);
     xTimerStart(xSleepTimer, 0);
 }
 

@@ -14,7 +14,7 @@ This workshop is designed to run on the M5StickC device. It includes multiple la
 
 ## Start
 
-The workshop documentation and content is located [here](https://teuteuguy.github.io/amazon-freertos-m5stickc-workshop/)
+The workshop documentation and content is located [here](https://onsankawai.github.io/amazon-freertos-m5stickc-workshop/)
 
 
 
@@ -27,3 +27,7 @@ The workshop documentation and content is located [here](https://teuteuguy.githu
 The following workshop material including documentation and code, is provided as is. You may incur AWS service costs for using the different resources outlined in the labs. Material is provided AS IS and is to be used at your own discretion. The author will not be responsible for any issues you may run into by using this material. 
 
 If you have any feedback, suggestions, please use the issues section.
+
+# Credits
+Originally authored by [teuteuguy] (https://teuteuguy.github.io/afmw-docs/).
+

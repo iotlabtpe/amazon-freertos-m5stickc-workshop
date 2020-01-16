@@ -29,5 +29,5 @@ The following workshop material including documentation and code, is provided as
 If you have any feedback, suggestions, please use the issues section.
 
 # Credits
-Originally authored by [teuteuguy] (https://teuteuguy.github.io/afmw-docs/).
+Originally authored by [teuteuguy](https://teuteuguy.github.io/afmw-docs/).
 

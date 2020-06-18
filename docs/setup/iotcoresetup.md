@@ -40,6 +40,10 @@ Choose One-click certificate creation
 
 ![IoT Core 5]({{ "/assets/images/iotcore-5.png" | absolute_url }})
 
+Please download the certificate, public key and private key.
+
+![](../assets/images/key_download.jpg)
+
 If this is the first time you create a thing in AWS IoT, you may not have a policy for the thing. you can click “Register Thing” and attach policy later.
 
 ![IoT Core 6]({{ "/assets/images/iotcore-6.png" | absolute_url }})

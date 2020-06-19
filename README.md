@@ -14,7 +14,7 @@ This workshop is designed to run on the M5StickC device. It includes multiple la
 
 ## Start
 
-The workshop documentation and content is located [here](https://onsankawai.github.io/amazon-freertos-m5stickc-workshop/)
+The workshop documentation and content is located [here](https://iotlabtpe.github.io/amazon-freertos-m5stickc-workshop/)
 
 
 
